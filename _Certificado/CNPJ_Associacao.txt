@@ -1,0 +1,3 @@
+senha: associacao
+CNPJ : 99.999.090/9102-70
+Nºde série: 313838

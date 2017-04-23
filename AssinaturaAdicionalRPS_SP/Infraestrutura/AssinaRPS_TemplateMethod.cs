@@ -9,7 +9,6 @@ namespace MXM.Infraestrutura
     public abstract class AssinaRPS_TemplateMethod
     {
         protected abstract Boolean IsDadosValidos();
-
         protected abstract String ExecutarProcessoEspecifico();
 
         protected List<String> Mensagens;
@@ -34,7 +33,7 @@ namespace MXM.Infraestrutura
 
                 if (Mensagens.Count > 0)
                 {
-                    retorno += Mensagens.ToString();
+                    retorno += String.Concat(Mensagens.ToArray());
                 }
             }
             else
@@ -53,8 +52,7 @@ namespace MXM.Infraestrutura
             }
             else
             {
-                certificado = FindCertificate(StoreLocation.CurrentUser, StoreName.My,
-                           X509FindType.FindBySerialNumber, numeroSerieCertificado);
+                certificado = FindCertificate(StoreLocation.CurrentUser, StoreName.My, X509FindType.FindBySerialNumber, numeroSerieCertificado);
 
                 if (certificado == null)
                 {
