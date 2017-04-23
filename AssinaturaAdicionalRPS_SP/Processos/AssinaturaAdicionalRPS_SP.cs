@@ -10,7 +10,7 @@ namespace MXM.Assinatura.Processos
     {
         public string AssinaLoteRPS_Salvador(string sNumeroSerieCert, string sXML)
         {
-            return String.Empty;
+            return new AssinaturaRPS_Salvador(sXML).Assinar(sNumeroSerieCert);
         }
 
         public string AssinaRPS_SP(String sNumeroSerieCert, String sAssinatura)
