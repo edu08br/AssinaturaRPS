@@ -22,75 +22,8 @@ namespace MXM.Infraestrutura
 
             try
             {
-                String uri = "InfRps";
-
-                //XmlSerializer ser = new XmlSerializer(typeof(EnviarLoteRpsEnvio));
-                //EnviarLoteRpsEnvio enviarLoteRPSEnvio = ser.Deserialize(new FileStream(XML, FileMode.Open)) as EnviarLoteRpsEnvio;
-
-                //foreach (var rps in enviarLoteRPSEnvio.LoteRps.ListaRps)
-                //{
-                //    if (rps.Signature == null)
-                //    {
-                //        rps.Signature = new SignatureType();
-                //    }
-
-                //    rps.Signature.SignedInfo = new SignedInfoType();
-
-                //    rps.Signature.SignedInfo.CanonicalizationMethod = new CanonicalizationMethodType();
-                //    rps.Signature.SignedInfo.CanonicalizationMethod.Algorithm = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
-
-                //    rps.Signature.SignedInfo.SignatureMethod = new SignatureMethodType();
-                //    rps.Signature.SignedInfo.SignatureMethod.Algorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
-
-                //}
-
-                XmlDocument docXML = new XmlDocument();
-                docXML.Load(XML);
-
-                SignedXml signedXml = new SignedXml(docXML);
-                signedXml.SigningKey = certificado.PrivateKey;
-                signedXml.SignedInfo.CanonicalizationMethod = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
-                signedXml.SignedInfo.SignatureMethod = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
-
-                Reference reference = new Reference();
-
-                // Pega a URI para ser assinada
-                XmlAttributeCollection _Uri = docXML.GetElementsByTagName(uri).Item(0).Attributes;
-                foreach (XmlAttribute _atributo in _Uri)
-                {
-                    if (_atributo.Name == "id")
-                        reference.Uri = "#" + _atributo.InnerText;
-                }
-
-                // Adiciona o envelope à referência
-                XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
-                reference.AddTransform(env);
-
-                // Atribui o método do Hash
-                reference.DigestMethod = "http://www.w3.org/2000/09/xmldsig#sha1";
-
-                // Adiciona a referencia ao XML assinado
-                signedXml.AddReference(reference);
-
-                // Cria o objeto keyInfo
-                KeyInfo keyInfo = new KeyInfo();
-
-                // Carrega a informação da KeyInfo
-                KeyInfoClause rsaKeyVal = new RSAKeyValue((System.Security.Cryptography.RSA)certificado.PrivateKey);
-                KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
-                x509Data.AddSubjectName(certificado.SubjectName.Name.ToString());
-                keyInfo.AddClause(x509Data);
-                keyInfo.AddClause(rsaKeyVal);
-
-                signedXml.KeyInfo = keyInfo;
-                signedXml.Signature.Id = "Assigned" + uri;
-                signedXml.ComputeSignature();
-
-                XmlElement xmlDigitalSignature = signedXml.GetXml();
-
-                docXML.DocumentElement.AppendChild(docXML.ImportNode(xmlDigitalSignature, true));
-
-                retorno = docXML.InnerXml;
+                XML = AssinarXml("Rps", "InfRps");
+                retorno = AssinarXml("EnviarLoteRpsEnvio", "LoteRps");                
             }
             catch (Exception erro)
             {
@@ -105,16 +38,15 @@ namespace MXM.Infraestrutura
             return true;
         }
 
-        private void AssinarXml(string arquivo, string tagAssinatura, string tagAtributoId)
+        private string AssinarXml(string tagAssinatura, string tagAtributoId)
         {
-            StreamReader SR = null;
+            //StreamReader SR = null;
 
-            try
-            {
-                SR = File.OpenText(arquivo);
-                string xmlString = SR.ReadToEnd();
-                SR.Close();
-                SR = null;
+           
+                //SR = File.OpenText(arquivo);
+                //string xmlString = SR.ReadToEnd();
+                //SR.Close();
+                //SR = null;
 
                 // Create a new XML document.
                 XmlDocument doc = new XmlDocument();
@@ -123,7 +55,7 @@ namespace MXM.Infraestrutura
                 doc.PreserveWhitespace = false;
 
                 // Load the passed XML file using it’s name.
-                doc.LoadXml(xmlString);
+                doc.LoadXml(XML);
 
                 if (doc.GetElementsByTagName(tagAssinatura).Count == 0)
                 {
@@ -172,8 +104,8 @@ namespace MXM.Infraestrutura
                             XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
                             reference.AddTransform(env);
 
-                            XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
-                            reference.AddTransform(c14);
+                            //XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
+                            //reference.AddTransform(c14);
 
                             // Add the reference to the SignedXml object.
                             signedXml.AddReference(reference);
@@ -181,9 +113,11 @@ namespace MXM.Infraestrutura
                             // Create a new KeyInfo object
                             KeyInfo keyInfo = new KeyInfo();
 
-                            // Load the certificate into a KeyInfoX509Data object
-                            // and add it to the KeyInfo object.
-                            keyInfo.AddClause(new KeyInfoX509Data(certificado));
+                            KeyInfoClause rsaKeyVal = new RSAKeyValue((System.Security.Cryptography.RSA)certificado.PrivateKey);
+                            KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
+                            x509Data.AddSubjectName(certificado.SubjectName.Name.ToString());
+                            keyInfo.AddClause(x509Data);
+                            keyInfo.AddClause(rsaKeyVal);
 
                             // Add the KeyInfo object to the SignedXml object.
                             signedXml.KeyInfo = keyInfo;
@@ -201,20 +135,15 @@ namespace MXM.Infraestrutura
                     XMLDoc.PreserveWhitespace = false;
                     XMLDoc = doc;
 
-                    string conteudoXMLAssinado = XMLDoc.OuterXml;
+                    return doc.OuterXml;
 
-                    using (StreamWriter sw = File.CreateText(arquivo))
-                    {
-                        sw.Write(conteudoXMLAssinado);
-                        sw.Close();
-                    }
+                    //using (StreamWriter sw = File.CreateText(arquivo))
+                    //{
+                    //    sw.Write(conteudoXMLAssinado);
+                    //    sw.Close();
+                    //}
                 }
-            }
-            finally
-            {
-                if (SR != null)
-                    SR.Close();
-            }
+           
         }
     }
 }

@@ -37,6 +37,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.txbRetorno = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.txbArqEntrada = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // cmbUF
@@ -107,7 +109,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 210);
+            this.label3.Location = new System.Drawing.Point(12, 341);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(45, 13);
             this.label3.TabIndex = 8;
@@ -115,19 +117,39 @@
             // 
             // txbRetorno
             // 
-            this.txbRetorno.Location = new System.Drawing.Point(10, 241);
+            this.txbRetorno.Location = new System.Drawing.Point(10, 357);
             this.txbRetorno.Multiline = true;
             this.txbRetorno.Name = "txbRetorno";
             this.txbRetorno.ReadOnly = true;
             this.txbRetorno.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txbRetorno.Size = new System.Drawing.Size(315, 282);
+            this.txbRetorno.Size = new System.Drawing.Size(315, 144);
             this.txbRetorno.TabIndex = 9;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(13, 191);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(44, 13);
+            this.label4.TabIndex = 10;
+            this.label4.Text = "Entrada";
+            // 
+            // txbArqEntrada
+            // 
+            this.txbArqEntrada.Location = new System.Drawing.Point(10, 207);
+            this.txbArqEntrada.Multiline = true;
+            this.txbArqEntrada.Name = "txbArqEntrada";
+            this.txbArqEntrada.ReadOnly = true;
+            this.txbArqEntrada.Size = new System.Drawing.Size(315, 131);
+            this.txbArqEntrada.TabIndex = 11;
             // 
             // Princip
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(337, 526);
+            this.Controls.Add(this.txbArqEntrada);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.txbRetorno);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -156,6 +178,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txbRetorno;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox txbArqEntrada;
     }
 }
 

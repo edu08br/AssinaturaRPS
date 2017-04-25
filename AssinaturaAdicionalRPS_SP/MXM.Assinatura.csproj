@@ -55,7 +55,7 @@
     <Compile Include="Infraestrutura\AssinaturaRPS_Salvador.cs" />
     <Compile Include="Infraestrutura\AssinaturaRPS_SP.cs" />
     <Compile Include="Infraestrutura\EstruturaXML_Salvador.cs" />
-    <Compile Include="Processos\AssinaturaAdicionalRPS_SP.cs" />
+    <Compile Include="Processos\AssinaturaRPS.cs" />
     <Compile Include="Domain\Interface\IAssinaturaLoteRPS.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

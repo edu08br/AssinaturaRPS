@@ -1,5 +1,6 @@
 ﻿using MXM.Assinatura.Processos;
 using System;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 
@@ -42,7 +43,31 @@ namespace TestarAssinaturaRPS
             if (openFieldDialog.ShowDialog() == DialogResult.OK)
             {
                 txbPathArquivoSelecionado.Text = openFieldDialog.FileName;
+
+                txbArqEntrada.Text = ObterTextoComArquivoSelecionado(txbPathArquivoSelecionado.Text);
             }
+        }
+
+        private string ObterTextoComArquivoSelecionado(string pathArquivo)
+        {
+            StreamReader SR = null;
+            string retorno = String.Empty;
+            
+            try
+            {
+                if (!String.IsNullOrEmpty(pathArquivo))
+                {
+                    SR = File.OpenText(pathArquivo);
+                    retorno = SR.ReadToEnd();
+                }
+            }
+            finally
+            {
+                SR.Close();
+                SR = null;
+            }
+
+            return retorno;
         }
 
         private void btnProcessar_Click(object sender, EventArgs e)
@@ -54,11 +79,11 @@ namespace TestarAssinaturaRPS
         {
             String UF = cmbUF.Text;
             String serialCertificado = cmbCertificados.Text;
-            String pathXML = txbPathArquivoSelecionado.Text;
+            String pathXML = txbArqEntrada.Text;
 
             if ((!String.IsNullOrEmpty(UF)) && (!String.IsNullOrEmpty(serialCertificado)) && (!String.IsNullOrEmpty(pathXML)))
             {
-                var assinaturaAdicional = new AssinaturaAdicionalRPS_SP();
+                var assinaturaAdicional = new AssinaturaRPS();
                 String retorno = String.Empty;
 
                 if (UF == "Salvador")

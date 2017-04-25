@@ -65,6 +65,8 @@
 						</Contato>
 					</Tomador>
 				</InfRps>
+			</Rps>
+			<Rps>
 				<InfRps id="R2">
 					<IdentificacaoRps>
 						<Numero>9039</Numero>
@@ -124,7 +126,7 @@
 						</Contato>
 					</Tomador>
 				</InfRps>
-			</Rps>
+							</Rps>
 		</ListaRps>
 	</LoteRps>
 </EnviarLoteRpsEnvio>
