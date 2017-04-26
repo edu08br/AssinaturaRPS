@@ -52,9 +52,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Infraestrutura\AssinaRPS_TemplateMethod.cs" />
-    <Compile Include="Infraestrutura\AssinaturaRPS_Salvador.cs" />
-    <Compile Include="Infraestrutura\AssinaturaRPS_SP.cs" />
-    <Compile Include="Infraestrutura\EstruturaXML_Salvador.cs" />
+    <Compile Include="Infraestrutura\Prefeituras\AssinaturaRPS_Salvador.cs" />
+    <Compile Include="Infraestrutura\Prefeituras\AssinaturaRPS_SP.cs" />
+    <Compile Include="Infraestrutura\DataBindXML\EstruturaXML_Salvador.cs" />
     <Compile Include="Processos\AssinaturaRPS.cs" />
     <Compile Include="Domain\Interface\IAssinaturaLoteRPS.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

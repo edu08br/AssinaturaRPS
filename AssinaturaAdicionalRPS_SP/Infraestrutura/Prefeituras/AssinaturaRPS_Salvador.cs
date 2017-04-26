@@ -3,8 +3,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.Xml;
 using System.Xml;
+using System.Xml.Serialization;
 
-namespace MXM.Infraestrutura
+namespace MXM.Infraestrutura.Prefeituras
 {
     [Guid("5F8FDE21-D0A3-46BD-8D6A-5F234572A53A")]
     public class AssinaturaRPS_Salvador : AssinaRPS_TemplateMethod
@@ -19,11 +20,23 @@ namespace MXM.Infraestrutura
         protected override string ExecutarProcessoEspecifico()
         {
             String retorno = String.Empty;
-
             try
             {
-                XML = AssinarXml("Rps", "InfRps");
-                retorno = AssinarXml("EnviarLoteRpsEnvio", "LoteRps");                
+                XmlSerializer serEnviarLoteRPSEnvio = new XmlSerializer(typeof(EnviarLoteRpsEnvio));
+                                
+                EnviarLoteRpsEnvio enviarLoteRPSEnvio = serEnviarLoteRPSEnvio.Deserialize(new FileStream(XML, FileMode.Open)) as EnviarLoteRpsEnvio;
+
+                XmlSerializer serSignatureType = new XmlSerializer(typeof(SignatureType));
+
+                foreach (var rps in enviarLoteRPSEnvio.LoteRps.ListaRps)
+                {
+                    string xmlSignature = GerarTagSignature(XML, rps.InfRps.id, true);
+                    SignatureType signature = serSignatureType.Deserialize(new FileStream(xmlSignature, FileMode.Open)) as SignatureType;
+                    rps.Signature = signature;
+                }
+
+                //XML = AssinarXml("Rps", "InfRps");
+                //retorno = AssinarXml("EnviarLoteRpsEnvio", "LoteRps");
             }
             catch (Exception erro)
             {
@@ -40,21 +53,9 @@ namespace MXM.Infraestrutura
 
         private string AssinarXml(string tagAssinatura, string tagAtributoId)
         {
-            //StreamReader SR = null;
-
-           
-                //SR = File.OpenText(arquivo);
-                //string xmlString = SR.ReadToEnd();
-                //SR.Close();
-                //SR = null;
-
-                // Create a new XML document.
+            {
                 XmlDocument doc = new XmlDocument();
-
-                // Format the document to ignore white spaces.
                 doc.PreserveWhitespace = false;
-
-                // Load the passed XML file using it’s name.
                 doc.LoadXml(XML);
 
                 if (doc.GetElementsByTagName(tagAssinatura).Count == 0)
@@ -67,8 +68,6 @@ namespace MXM.Infraestrutura
                 }
                 else
                 {
-                    XmlDocument XMLDoc;
-
                     XmlNodeList lists = doc.GetElementsByTagName(tagAssinatura);
                     foreach (XmlNode nodes in lists)
                     {
@@ -94,20 +93,15 @@ namespace MXM.Infraestrutura
                                 reference.Uri = "#" + childElemen.GetAttributeNode("id").Value;
                             }
 
-                            // Create a SignedXml object.
                             SignedXml signedXml = new SignedXml(doc);
-
-                            // Add the key to the SignedXml document
                             signedXml.SigningKey = certificado.PrivateKey;
 
-                            // Add an enveloped transformation to the reference.
                             XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
                             reference.AddTransform(env);
 
                             //XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
                             //reference.AddTransform(c14);
 
-                            // Add the reference to the SignedXml object.
                             signedXml.AddReference(reference);
 
                             // Create a new KeyInfo object
@@ -131,7 +125,7 @@ namespace MXM.Infraestrutura
                         }
                     }
 
-                    XMLDoc = new XmlDocument();
+                    XmlDocument XMLDoc = new XmlDocument();
                     XMLDoc.PreserveWhitespace = false;
                     XMLDoc = doc;
 
@@ -143,7 +137,9 @@ namespace MXM.Infraestrutura
                     //    sw.Close();
                     //}
                 }
-           
+
+            }
+
         }
     }
 }

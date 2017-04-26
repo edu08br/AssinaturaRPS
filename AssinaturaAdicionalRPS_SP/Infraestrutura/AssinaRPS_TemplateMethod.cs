@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography.Xml;
+using System.Xml;
 
 namespace MXM.Infraestrutura
 {
@@ -87,6 +89,55 @@ namespace MXM.Infraestrutura
         protected void AddMensagem(String descricao)
         {
             this.Mensagens.Add(descricao);
+        }
+
+        protected String GerarTagSignature(String xml, String IDRps, Boolean IsSalvador = false)
+        {            
+            XmlDocument doc = new XmlDocument();
+            doc.PreserveWhitespace = false;
+            doc.LoadXml(xml);
+
+            Reference reference = new Reference();
+            reference.Uri = "";
+            if (String.IsNullOrEmpty(IDRps))
+            {
+                reference.Uri = ""; // "#" + childElemen.GetAttributeNode("Id").Value;
+            }
+            else
+            {
+                reference.Uri = "#" + IDRps;
+            }
+
+            
+            SignedXml signedXml = new SignedXml(doc);
+            signedXml.SigningKey = certificado.PrivateKey;
+
+            XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
+            reference.AddTransform(env);
+
+            if (!IsSalvador)
+            {
+                XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
+                reference.AddTransform(c14);
+            }
+
+            signedXml.AddReference(reference);
+
+            KeyInfo keyInfo = new KeyInfo();
+
+            if (IsSalvador)
+            {
+                KeyInfoClause rsaKeyVal = new RSAKeyValue((System.Security.Cryptography.RSA)certificado.PrivateKey);
+                KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
+                x509Data.AddSubjectName(certificado.SubjectName.Name.ToString());
+                keyInfo.AddClause(x509Data);
+                keyInfo.AddClause(rsaKeyVal);
+            }
+
+            signedXml.KeyInfo = keyInfo;
+            signedXml.ComputeSignature();
+
+            return signedXml.GetXml().OuterXml;
         }
     }
 }

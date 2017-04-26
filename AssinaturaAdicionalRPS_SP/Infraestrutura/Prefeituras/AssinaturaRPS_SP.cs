@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace MXM.Infraestrutura
+namespace MXM.Infraestrutura.Prefeituras
 {
     [Guid("97ED8500-9188-458B-8E01-91D5B5E96F03")]
     public class AssinaturaRPS_SP : AssinaRPS_TemplateMethod
