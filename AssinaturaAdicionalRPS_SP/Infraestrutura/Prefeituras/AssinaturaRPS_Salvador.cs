@@ -11,6 +11,7 @@ namespace MXM.Infraestrutura.Prefeituras
     public class AssinaturaRPS_Salvador : AssinaRPS_TemplateMethod
     {
         private string XML;
+        private EnviarLoteRpsEnvio enviarLoteRPSEnvio;
 
         public AssinaturaRPS_Salvador(String aXML)
         {
@@ -22,21 +23,14 @@ namespace MXM.Infraestrutura.Prefeituras
             String retorno = String.Empty;
             try
             {
-                XmlSerializer serEnviarLoteRPSEnvio = new XmlSerializer(typeof(EnviarLoteRpsEnvio));
-                                
-                EnviarLoteRpsEnvio enviarLoteRPSEnvio = serEnviarLoteRPSEnvio.Deserialize(new FileStream(XML, FileMode.Open)) as EnviarLoteRpsEnvio;
-
-                XmlSerializer serSignatureType = new XmlSerializer(typeof(SignatureType));
-
                 foreach (var rps in enviarLoteRPSEnvio.LoteRps.ListaRps)
                 {
-                    string xmlSignature = GerarTagSignature(XML, rps.InfRps.id, true);
-                    SignatureType signature = serSignatureType.Deserialize(new FileStream(xmlSignature, FileMode.Open)) as SignatureType;
-                    rps.Signature = signature;
+                    rps.Signature = ObterTagSignatureAssinada<SignatureType>(XML, rps.InfRps.id, true);
                 }
 
-                //XML = AssinarXml("Rps", "InfRps");
-                //retorno = AssinarXml("EnviarLoteRpsEnvio", "LoteRps");
+                enviarLoteRPSEnvio.Signature = ObterTagSignatureAssinada<SignatureType>(XML, enviarLoteRPSEnvio.LoteRps.id, true);
+
+                retorno = ConverterDataBindEmStringXml(enviarLoteRPSEnvio);
             }
             catch (Exception erro)
             {
@@ -48,7 +42,21 @@ namespace MXM.Infraestrutura.Prefeituras
 
         protected override bool IsDadosValidos()
         {
-            return true;
+            if (!String.IsNullOrEmpty(XML))
+            {
+                enviarLoteRPSEnvio = ConverterStringXmlEmDataBind<EnviarLoteRpsEnvio>(XML);
+
+                if (enviarLoteRPSEnvio == null)
+                {
+                    AddMensagem("Ocorreu erro ao converter XML em Classe");
+                }
+            }
+            else
+            {
+                AddMensagem("XML vazio");
+            }
+
+            return Mensagens.Count == 0;
         }
 
         private string AssinarXml(string tagAssinatura, string tagAtributoId)
@@ -137,9 +145,7 @@ namespace MXM.Infraestrutura.Prefeituras
                     //    sw.Close();
                     //}
                 }
-
             }
-
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace MXM.Infraestrutura
 {
@@ -91,8 +93,32 @@ namespace MXM.Infraestrutura
             this.Mensagens.Add(descricao);
         }
 
-        protected String GerarTagSignature(String xml, String IDRps, Boolean IsSalvador = false)
-        {            
+        protected T ObterTagSignatureAssinada<T>(String xml, String IDRps, Boolean IsSalvador = false) where T : class
+        {
+            T retorno = null;
+            MemoryStream stream = new MemoryStream();
+            StreamWriter writer = new StreamWriter(stream);
+            try
+            {
+                string xmlSignature = GerarTagSignature(xml, IDRps, true);
+                XmlSerializer serSignatureType = new XmlSerializer(typeof(T));
+                writer.Write(xmlSignature);
+                writer.Flush();
+                stream.Position = 0;
+
+                retorno = serSignatureType.Deserialize(stream) as T;
+            }
+            finally
+            {
+                stream.Close();
+                writer.Close();
+            }
+
+            return retorno;
+        }
+
+        private String GerarTagSignature(String xml, String IDRps, Boolean IsSalvador = false)
+        {
             XmlDocument doc = new XmlDocument();
             doc.PreserveWhitespace = false;
             doc.LoadXml(xml);
@@ -108,7 +134,6 @@ namespace MXM.Infraestrutura
                 reference.Uri = "#" + IDRps;
             }
 
-            
             SignedXml signedXml = new SignedXml(doc);
             signedXml.SigningKey = certificado.PrivateKey;
 
@@ -138,6 +163,51 @@ namespace MXM.Infraestrutura
             signedXml.ComputeSignature();
 
             return signedXml.GetXml().OuterXml;
+        }
+
+        protected String ConverterDataBindEmStringXml<T>(T aDataBind) where T : class
+        {
+            String retorno = String.Empty;
+
+            StringWriter stringWriter = new StringWriter();
+            XmlWriter xmlWriter = XmlWriter.Create(stringWriter);
+            try
+            {
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
+                xmlSerializer.Serialize(xmlWriter, aDataBind);
+                retorno = stringWriter.ToString();
+            }
+            finally
+            {
+                xmlWriter.Close();
+                stringWriter.Close();                
+            }
+
+            return retorno;
+        }
+
+        protected T ConverterStringXmlEmDataBind<T>(String xml) where T : class
+        {
+            T retorno = null;
+
+            MemoryStream stream = new MemoryStream();
+            StreamWriter writer = new StreamWriter(stream);
+            try
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(T));
+                writer.Write(xml);
+                writer.Flush();
+                stream.Position = 0;
+
+                retorno = serializer.Deserialize(stream) as T;
+            }
+            finally
+            {
+                stream.Close();
+                writer.Close();
+            }
+
+            return retorno;
         }
     }
 }
