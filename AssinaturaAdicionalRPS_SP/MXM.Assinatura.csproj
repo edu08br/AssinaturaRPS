@@ -32,7 +32,7 @@
     <RegisterForComInterop>true</RegisterForComInterop>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <DelaySign>false</DelaySign>
