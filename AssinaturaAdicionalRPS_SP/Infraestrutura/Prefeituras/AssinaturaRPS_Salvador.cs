@@ -1,11 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.Xml;
-using System.Xml;
-using System.Xml.Serialization;
 
-namespace MXM.Infraestrutura.Prefeituras
+namespace MXM.Assinatura.Infraestrutura.Prefeituras
 {
     [Guid("5F8FDE21-D0A3-46BD-8D6A-5F234572A53A")]
     public class AssinaturaRPS_Salvador : AssinaRPS_TemplateMethod
