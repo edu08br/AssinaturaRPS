@@ -1,5 +1,5 @@
 ﻿using MXM.Assinatura.Domain.Interface;
-using MXM.Infraestrutura.Prefeituras;
+using MXM.Assinatura.Infraestrutura.Prefeituras;
 using System;
 using System.Runtime.InteropServices;
 

@@ -7,7 +7,7 @@ namespace MXM.Assinatura.Domain.Interface
     public interface IAssinaturaRPS
     {
         string AssinaRPS_SP(String sNumeroSerieCert, String sAssinatura);
+
         string AssinaLoteRPS_Salvador(String sNumeroSerieCert, String sXML);
     }
-
 }
