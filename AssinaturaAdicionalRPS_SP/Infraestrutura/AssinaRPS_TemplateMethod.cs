@@ -4,17 +4,17 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace MXM.Infraestrutura
+namespace MXM.Assinatura.Infraestrutura
 {
     [Guid("B94BE863-F063-4BE6-B019-0F901A9671CB")]
     public abstract class AssinaRPS_TemplateMethod
     {
         protected abstract Boolean IsDadosValidos();
+
         protected abstract String ExecutarProcessoEspecifico();
 
         protected List<String> Mensagens;

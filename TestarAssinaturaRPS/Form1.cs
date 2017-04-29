@@ -52,7 +52,7 @@ namespace TestarAssinaturaRPS
         {
             StreamReader SR = null;
             string retorno = String.Empty;
-            
+
             try
             {
                 if (!String.IsNullOrEmpty(pathArquivo))
