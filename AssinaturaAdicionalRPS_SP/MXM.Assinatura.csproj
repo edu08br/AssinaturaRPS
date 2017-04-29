@@ -32,13 +32,14 @@
     <RegisterForComInterop>true</RegisterForComInterop>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>AssinaturaAdicionalRPS_SP.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -52,30 +53,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Infraestrutura\AssinaRPS_TemplateMethod.cs" />
-    <Compile Include="Infraestrutura\AssinaturaRPS_Salvador.cs" />
-    <Compile Include="Infraestrutura\AssinaturaRPS_SP.cs" />
-    <Compile Include="Infraestrutura\EstruturaXML_Salvador.cs" />
+    <Compile Include="Infraestrutura\Prefeituras\AssinaturaRPS_Salvador.cs" />
+    <Compile Include="Infraestrutura\Prefeituras\AssinaturaRPS_SP.cs" />
+    <Compile Include="Infraestrutura\DataBindXML\EstruturaXML_Salvador.cs" />
     <Compile Include="Processos\AssinaturaRPS.cs" />
     <Compile Include="Domain\Interface\IAssinaturaLoteRPS.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="AssinaturaAdicionalRPS_SP.pfx" />
-    <None Include="XSD\Salvador\DadosComplementares.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="XSD\Salvador\Deducoes.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="XSD\Salvador\nfse_salvador.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="XSD\Salvador\ServicosComplementares.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="XSD\Salvador\xmldsig-core-schema20020212.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

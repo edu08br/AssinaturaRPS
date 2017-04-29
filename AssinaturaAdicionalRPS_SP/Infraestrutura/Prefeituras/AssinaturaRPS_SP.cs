@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace MXM.Infraestrutura
+namespace MXM.Infraestrutura.Prefeituras
 {
     [Guid("97ED8500-9188-458B-8E01-91D5B5E96F03")]
     public class AssinaturaRPS_SP : AssinaRPS_TemplateMethod
@@ -31,15 +31,15 @@ namespace MXM.Infraestrutura
             {
                 //recebe o certificado e a string a ser assinada
                 System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+                
+                //cria o array de bytes e realiza a conversao da string em array de bytes
+                byte[] sAssinaturaByte = enc.GetBytes(sAssinatura);
 
                 RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
 
                 //pega a chave privada do certificado digital
                 rsa = certificado.PrivateKey as RSACryptoServiceProvider;
-
-                //cria o array de bytes e realiza a conversao da string em array de bytes
-                byte[] sAssinaturaByte = enc.GetBytes(sAssinatura);
-
+                
                 RSAPKCS1SignatureFormatter rsaf = new RSAPKCS1SignatureFormatter(rsa);
                 SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider();
 
