@@ -4,8 +4,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace MXM.Assinatura.Infraestrutura
@@ -109,7 +111,7 @@ namespace MXM.Assinatura.Infraestrutura
         {
             T retorno = null;
             MemoryStream stream = new MemoryStream();
-            StreamWriter writer = new StreamWriter(stream);
+            StreamWriter writer = new StreamWriter(stream, System.Text.Encoding.UTF8);
             try
             {
                 string xmlSignature = GerarTagSignature(xml, idSignature, IsSalvador);
@@ -142,62 +144,47 @@ namespace MXM.Assinatura.Infraestrutura
             String retorno = String.Empty;
             try
             {
-                //XmlDocument doc = new XmlDocument();
-                //doc.PreserveWhitespace = false;
-                //doc.LoadXml(xml);
+                XmlDocument doc = new XmlDocument();
+                doc.PreserveWhitespace = false;
+                doc.LoadXml(xml);
 
-                byte[] bytesXml = Encoding.Default.GetBytes(xml);
+                Reference reference = new Reference();
+                reference.Uri = "";
+                if (!String.IsNullOrEmpty(idSignature))
+                {
+                    reference.Uri = "#" + idSignature;
+                }
 
-                ContentInfo content = new ContentInfo(bytesXml);
-                SignedCms signedCms = new SignedCms(content, false);
+                SignedXml signedXml = new SignedXml(doc);
+                signedXml.SigningKey = certificado.PrivateKey;
 
-                signedCms.Decode(bytesXml);
+                XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
+                reference.AddTransform(env);
 
-                CmsSigner signer = new CmsSigner(certificado);
-                signer.IncludeOption = X509IncludeOption.WholeChain;
-                signedCms.ComputeSignature(signer);
+                if (!IsSalvador)
+                {
+                    XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
+                    reference.AddTransform(c14);
+                }
 
-                byte[] bytesXmlRet = signedCms.Encode();
+                signedXml.AddReference(reference);
 
-                retorno = Encoding.UTF8.GetString(bytesXmlRet);
+                KeyInfo keyInfo = new KeyInfo();
+                KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
+                if (IsSalvador)
+                {
+                    KeyInfoClause rsaKeyVal = new RSAKeyValue((System.Security.Cryptography.RSA)certificado.PrivateKey);
+                    keyInfo.AddClause(rsaKeyVal);
 
-                //Reference reference = new Reference();
-                //reference.Uri = "";
-                //if (!String.IsNullOrEmpty(idSignature))
-                //{
-                //    reference.Uri = "#" + idSignature;
-                //}
+                    x509Data.AddSubjectName(certificado.SubjectName.Name.ToString());
+                }
 
-                //SignedXml signedXml = new SignedXml(doc);
-                //signedXml.SigningKey = certificado.PrivateKey;
+                keyInfo.AddClause(x509Data);
 
-                //XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
-                //reference.AddTransform(env);
+                signedXml.KeyInfo = keyInfo;
+                signedXml.ComputeSignature();
 
-                //if (!IsSalvador)
-                //{
-                //    XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
-                //    reference.AddTransform(c14);
-                //}
-
-                //signedXml.AddReference(reference);
-
-                //KeyInfo keyInfo = new KeyInfo();
-                //KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
-                //if (IsSalvador)
-                //{
-                //    KeyInfoClause rsaKeyVal = new RSAKeyValue((System.Security.Cryptography.RSA)certificado.PrivateKey);
-                //    keyInfo.AddClause(rsaKeyVal);
-
-                //    x509Data.AddSubjectName(certificado.SubjectName.Name.ToString());
-                //}
-
-                //keyInfo.AddClause(x509Data);
-
-                //signedXml.KeyInfo = keyInfo;
-                //signedXml.ComputeSignature();
-
-                //retorno = signedXml.GetXml().OuterXml;
+                retorno = signedXml.GetXml().OuterXml;
             }
             catch (Exception erro)
             {
@@ -207,29 +194,26 @@ namespace MXM.Assinatura.Infraestrutura
             return retorno;
         }
 
-        protected String ConverterDataBindEmStringXml<T>(T aDataBind, Boolean incluirEncode = false) where T : class
+        protected String ConverterDataBindEmStringXml<T>(T aDataBind) where T : class
         {
             String retorno = String.Empty;
-
-            //var memoryStream = new MemoryStream();
-            //TextWriter stringWriter = null;
-            //if (incluirEncode)
-            //{
-            //    stringWriter = new StreamWriter(memoryStream, System.Text.Encoding.UTF8);
-            //}
-            //else
-            //{
-            //    stringWriter = new StreamWriter(memoryStream);
-            //}
             StringWriter stringWriter = new StringWriter();
-            XmlWriter xmlWriter = XmlWriter.Create(stringWriter);
-
             try
             {
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
-                xmlSerializer.Serialize(stringWriter, aDataBind);
+
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Encoding = Encoding.UTF8;
+                settings.Indent = false;
+                settings.OmitXmlDeclaration = false;
+                
+                using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, settings))
+                {
+                    xmlSerializer.Serialize(xmlWriter, aDataBind);
+                }
+                
                 retorno = stringWriter.ToString();
-                // retorno = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+                retorno = XElement.Parse(retorno).ToString(SaveOptions.DisableFormatting);
             }
             catch (Exception erro)
             {
@@ -237,7 +221,6 @@ namespace MXM.Assinatura.Infraestrutura
             }
             finally
             {
-                //  memoryStream.Close();
                 stringWriter.Close();
             }
 
