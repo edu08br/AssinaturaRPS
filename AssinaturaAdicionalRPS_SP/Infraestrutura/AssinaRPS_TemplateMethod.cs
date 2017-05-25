@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
+using System.Security.Cryptography.Xml;
 using System.Xml;
-using System.Xml.Serialization;
 
 namespace MXM.Assinatura.Infraestrutura
 {
     [Guid("B94BE863-F063-4BE6-B019-0F901A9671CB")]
     public abstract class AssinaRPS_TemplateMethod
     {
+        private string numeroSerieCertificado;
         protected abstract Boolean IsDadosValidos();
-
         protected abstract String ExecutarProcessoEspecifico();
 
         protected List<String> Mensagens;
         protected X509Certificate2 certificado;
-        protected string numeroSerieCertificado;
 
         public AssinaRPS_TemplateMethod()
         {
@@ -37,20 +33,13 @@ namespace MXM.Assinatura.Infraestrutura
                 if (IsCertificadoExistente() && IsDadosValidos())
                 {
                     retorno = ExecutarProcessoEspecifico();
+                }
 
-                    if (Mensagens.Count > 0)
-                    {
-                        retorno += String.Concat(Mensagens.ToArray());
-                    }
-                }
-                else
-                {
-                    retorno = Mensagens.ToString();
-                }
+                retorno += String.Concat(Mensagens.ToArray());
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu ao executar o processo: " + erro.Message);
+                AddMensagem("Ocorreu erro - ao executar o processo: " + erro.ToString());
             }
             return retorno;
         }
@@ -59,7 +48,7 @@ namespace MXM.Assinatura.Infraestrutura
         {
             if (string.IsNullOrWhiteSpace(numeroSerieCertificado))
             {
-                AddMensagem("CODERRO0 - Certificado digital não parametrizado.");
+                AddMensagem("Ocorreu erro - Certificado digital não parametrizado.");
             }
             else
             {
@@ -67,11 +56,11 @@ namespace MXM.Assinatura.Infraestrutura
 
                 if (certificado == null)
                 {
-                    AddMensagem("CODERRO1 - Certificado digital não instalado.");
+                    AddMensagem("Ocorreu erro - Certificado digital não instalado.");
                 }
             }
 
-            return Mensagens.Count == 0;
+            return (certificado != null);
         }
 
         protected X509Certificate2 FindCertificate(StoreLocation location, StoreName name, X509FindType findType, string findValue)
@@ -90,7 +79,7 @@ namespace MXM.Assinatura.Infraestrutura
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu um erro ao localizar o certificado: " + erro.Message);
+                AddMensagem("Ocorreu erro - ao localizar o certificado: " + erro.ToString());
             }
             finally
             {
@@ -105,168 +94,115 @@ namespace MXM.Assinatura.Infraestrutura
             this.Mensagens.Add(descricao);
         }
 
-        protected T ObterTagSignatureAssinada<T>(String xml, String idSignature, Boolean IsSalvador = false) where T : class
+        protected String AssinarXml(string xml, string tagAssinatura, string tagAtributoId, Boolean IsSalvador = false)
         {
-            T retorno = null;
-            MemoryStream stream = new MemoryStream();
-            StreamWriter writer = new StreamWriter(stream);
+            string XMLAssinado = String.Empty;
+
             try
             {
-                string xmlSignature = GerarTagSignature(xml, idSignature, IsSalvador);
+                XmlDocument doc = new XmlDocument();
+                doc.PreserveWhitespace = false;
+                doc.LoadXml(xml);
 
-                if (!String.IsNullOrEmpty(xmlSignature))
+                if (isDocumentoXmlValidoParaAssinar(doc, tagAssinatura, tagAtributoId))
                 {
-                    XmlSerializer serSignatureType = new XmlSerializer(typeof(T));
-                    writer.Write(xmlSignature);
-                    writer.Flush();
-                    stream.Position = 0;
+                    XmlNodeList lists = doc.GetElementsByTagName(tagAssinatura);
+                    foreach (XmlNode nodes in lists)
+                    {
+                        foreach (XmlNode childNodes in nodes.ChildNodes)
+                        {
+                            if (!childNodes.Name.Equals(tagAtributoId))
+                                continue;
 
-                    retorno = serSignatureType.Deserialize(stream) as T;
+                            if (childNodes.NextSibling != null && childNodes.NextSibling.Name.Equals("Signature"))
+                                continue;
+
+                            XmlElement xmlDigitalSignature = GerarAssinatura(IsSalvador, doc, childNodes);
+
+                            nodes.AppendChild(doc.ImportNode(xmlDigitalSignature, true));
+                        }
+                    }
+
+                    XMLAssinado = doc.OuterXml;
                 }
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu um erro ao obter o objeto assinado: " + erro.Message);
+                AddMensagem("Ocorreu erro - ao assinar. " + erro.ToString());
             }
-            finally
+
+            return XMLAssinado;
+        }
+
+        private bool isDocumentoXmlValidoParaAssinar(XmlDocument doc, string tagAssinatura, string tagAtributoId)
+        {
+            Boolean retorno = true;
+            if (doc.GetElementsByTagName(tagAssinatura).Count == 0)
             {
-                stream.Close();
-                writer.Close();
+                AddMensagem("Ocorreu erro - A tag de assinatura " + tagAssinatura.Trim() + " não existe no XML. (Código do Erro: 5)");
+                retorno = false;
+            }
+            else if (doc.GetElementsByTagName(tagAtributoId).Count == 0)
+            {
+                AddMensagem("Ocorreu erro - A tag de assinatura " + tagAtributoId.Trim() + " não existe no XML. (Código do Erro: 4)");
+                retorno = false;
             }
 
             return retorno;
         }
 
-        private String GerarTagSignature(String xml, String idSignature, Boolean IsSalvador = false)
+        private XmlElement GerarAssinatura(bool IsSalvador, XmlDocument doc, XmlNode childNodes)
         {
-            String retorno = String.Empty;
+            XmlElement retorno = null;
             try
             {
-                //XmlDocument doc = new XmlDocument();
-                //doc.PreserveWhitespace = false;
-                //doc.LoadXml(xml);
+                Reference reference = new Reference();
+                reference.Uri = "";
 
-                byte[] bytesXml = Encoding.Default.GetBytes(xml);
+                XmlElement childElemen = (XmlElement)childNodes;
+                if (childElemen.GetAttributeNode("Id") != null)
+                {
+                    reference.Uri = ""; // "#" + childElemen.GetAttributeNode("Id").Value;
+                }
+                else if (childElemen.GetAttributeNode("id") != null)
+                {
+                    reference.Uri = "#" + childElemen.GetAttributeNode("id").Value;
+                }
 
-                ContentInfo content = new ContentInfo(bytesXml);
-                SignedCms signedCms = new SignedCms(content, false);
+                SignedXml signedXml = new SignedXml(doc);
+                signedXml.SigningKey = certificado.PrivateKey;
 
-                signedCms.Decode(bytesXml);
+                XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
+                reference.AddTransform(env);
 
-                CmsSigner signer = new CmsSigner(certificado);
-                signer.IncludeOption = X509IncludeOption.WholeChain;
-                signedCms.ComputeSignature(signer);
+                if (!IsSalvador)
+                {
+                    XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
+                    reference.AddTransform(c14);
+                }
 
-                byte[] bytesXmlRet = signedCms.Encode();
+                signedXml.AddReference(reference);
 
-                retorno = Encoding.UTF8.GetString(bytesXmlRet);
+                KeyInfo keyInfo = new KeyInfo();
+                KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
+                if (IsSalvador)
+                {
+                    KeyInfoClause rsaKeyVal = new RSAKeyValue((System.Security.Cryptography.RSA)certificado.PrivateKey);
+                    keyInfo.AddClause(rsaKeyVal);
 
-                //Reference reference = new Reference();
-                //reference.Uri = "";
-                //if (!String.IsNullOrEmpty(idSignature))
-                //{
-                //    reference.Uri = "#" + idSignature;
-                //}
+                    x509Data.AddSubjectName(certificado.SubjectName.Name.ToString());
+                }
 
-                //SignedXml signedXml = new SignedXml(doc);
-                //signedXml.SigningKey = certificado.PrivateKey;
+                keyInfo.AddClause(x509Data);
 
-                //XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
-                //reference.AddTransform(env);
+                signedXml.KeyInfo = keyInfo;
+                signedXml.ComputeSignature();
 
-                //if (!IsSalvador)
-                //{
-                //    XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
-                //    reference.AddTransform(c14);
-                //}
-
-                //signedXml.AddReference(reference);
-
-                //KeyInfo keyInfo = new KeyInfo();
-                //KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
-                //if (IsSalvador)
-                //{
-                //    KeyInfoClause rsaKeyVal = new RSAKeyValue((System.Security.Cryptography.RSA)certificado.PrivateKey);
-                //    keyInfo.AddClause(rsaKeyVal);
-
-                //    x509Data.AddSubjectName(certificado.SubjectName.Name.ToString());
-                //}
-
-                //keyInfo.AddClause(x509Data);
-
-                //signedXml.KeyInfo = keyInfo;
-                //signedXml.ComputeSignature();
-
-                //retorno = signedXml.GetXml().OuterXml;
+                retorno = signedXml.GetXml();
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu um erro ao gerar assinatura: " + erro.Message);
-            }
-
-            return retorno;
-        }
-
-        protected String ConverterDataBindEmStringXml<T>(T aDataBind, Boolean incluirEncode = false) where T : class
-        {
-            String retorno = String.Empty;
-
-            //var memoryStream = new MemoryStream();
-            //TextWriter stringWriter = null;
-            //if (incluirEncode)
-            //{
-            //    stringWriter = new StreamWriter(memoryStream, System.Text.Encoding.UTF8);
-            //}
-            //else
-            //{
-            //    stringWriter = new StreamWriter(memoryStream);
-            //}
-            StringWriter stringWriter = new StringWriter();
-            XmlWriter xmlWriter = XmlWriter.Create(stringWriter);
-
-            try
-            {
-                XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
-                xmlSerializer.Serialize(stringWriter, aDataBind);
-                retorno = stringWriter.ToString();
-                // retorno = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
-            }
-            catch (Exception erro)
-            {
-                AddMensagem("Ocorreu um erro ao converter databind em xml: " + erro.Message);
-            }
-            finally
-            {
-                //  memoryStream.Close();
-                stringWriter.Close();
-            }
-
-            return retorno;
-        }
-
-        protected T ConverterStringXmlEmDataBind<T>(String xml) where T : class
-        {
-            T retorno = null;
-
-            MemoryStream stream = new MemoryStream();
-            StreamWriter writer = new StreamWriter(stream);
-            try
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(T));
-                writer.Write(xml);
-                writer.Flush();
-                stream.Position = 0;
-
-                retorno = serializer.Deserialize(stream) as T;
-            }
-            catch (Exception erro)
-            {
-                AddMensagem("Ocorreu um erro ao converter xml em databind: " + erro.Message);
-            }
-            finally
-            {
-                stream.Close();
-                writer.Close();
+                throw erro;
             }
 
             return retorno;

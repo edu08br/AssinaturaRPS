@@ -32,14 +32,13 @@
     <RegisterForComInterop>true</RegisterForComInterop>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>AssinaturaAdicionalRPS_SP.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -55,12 +54,13 @@
     <Compile Include="Infraestrutura\AssinaRPS_TemplateMethod.cs" />
     <Compile Include="Infraestrutura\Prefeituras\AssinaturaRPS_Salvador.cs" />
     <Compile Include="Infraestrutura\Prefeituras\AssinaturaRPS_SP.cs" />
-    <Compile Include="Infraestrutura\DataBindXML\EstruturaXML_Salvador.cs" />
     <Compile Include="Processos\AssinaturaRPS.cs" />
     <Compile Include="Domain\Interface\IAssinaturaLoteRPS.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="AssinaturaAdicionalRPS_SP.pfx" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
