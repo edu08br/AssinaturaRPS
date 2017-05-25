@@ -1,28 +1,18 @@
 @echo off
-echo Realiza registro da DLL "AssinaturaAdicionalRPS_SP.dll" utilizando o "RegSvcs.exe"
-
-if EXIST %WINDIR%\SysWOW64 goto Win64
-:Win32
-set sistema=Framework
-echo *** Preparando instalacao ***
-goto end
-
-:Win64
-set sistema=Framework64
-echo *** Preparando instalacao x64 ***
-goto end
-:end
+echo Realiza registro da DLL "AssinaturaLoteRPS.dll" utilizando o "RegAsm.exe"
 
 echo *** Preparando Framework 4.0 ***
-set dllName=AssinaturaAdicionalRPS_SP.dll /tlb:AssinaturaAdicionalRPS_SP.tlb
+set path=%~dp0
+set dllName=%path%AssinaturaLoteRPS.dll /tlb:%path%AssinaturaLoteRPS.tlb
+set dllName2=AssinaturaLoteRPS.dll /tlb:AssinaturaLoteRPS.tlb
 set version=v4.0.30319
-set regasm="%WINDIR%\Microsoft.NET\%sistema%\%version%\RegSvcs.exe"
+set regasm="%WINDIR%\Microsoft.NET\Framework\%version%\RegAsm.exe"
 
 echo *** Desregistrando DLL, caso exista ***
-%regasm% /u /quiet %dllName%
+%regasm% /u %dllName2%
 
 echo *** Registrando DLL ***
-%regasm% /quiet %dllName%
+%regasm% %dllName% /registered
 
 echo *** Processo concluido! ***
 pause

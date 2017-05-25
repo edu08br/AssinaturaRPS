@@ -34,25 +34,24 @@ namespace MXM.Assinatura.Infraestrutura
             this.numeroSerieCertificado = sNumeroSerieCert;
 
             String retorno = String.Empty;
+
             try
             {
-                if (IsCertificadoExistente() && IsDadosValidos())
+                if (IsCertificadoExistente())
                 {
-                    retorno = ExecutarProcessoEspecifico();
-
-                    if (Mensagens.Count > 0)
+                    if (IsDadosValidos())
                     {
-                        retorno += String.Concat(Mensagens.ToArray());
+                        retorno = ExecutarProcessoEspecifico();
                     }
-                }
-                else
-                {
-                    retorno = Mensagens.ToString();
                 }
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu ao executar o processo: " + erro.Message);
+                AddMensagem("Ocorreu erro ao executar o processo: " + erro.ToString());
+            }
+            finally
+            {
+                retorno += String.Concat(Mensagens.ToArray());
             }
             return retorno;
         }
@@ -61,7 +60,7 @@ namespace MXM.Assinatura.Infraestrutura
         {
             if (string.IsNullOrWhiteSpace(numeroSerieCertificado))
             {
-                AddMensagem("CODERRO0 - Certificado digital não parametrizado.");
+                AddMensagem("Ocorreu erro - Certificado digital não parametrizado.");
             }
             else
             {
@@ -69,11 +68,11 @@ namespace MXM.Assinatura.Infraestrutura
 
                 if (certificado == null)
                 {
-                    AddMensagem("CODERRO1 - Certificado digital não instalado.");
+                    AddMensagem("Ocorreu erro - Certificado digital não instalado.");
                 }
             }
 
-            return Mensagens.Count == 0;
+            return (certificado != null);
         }
 
         protected X509Certificate2 FindCertificate(StoreLocation location, StoreName name, X509FindType findType, string findValue)
@@ -128,7 +127,7 @@ namespace MXM.Assinatura.Infraestrutura
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu um erro ao obter o objeto assinado: " + erro.Message);
+                AddMensagem("Ocorreu erro ao obter o objeto assinado: " + erro.ToString());
             }
             finally
             {
@@ -188,7 +187,7 @@ namespace MXM.Assinatura.Infraestrutura
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu um erro ao gerar assinatura: " + erro.Message);
+                AddMensagem("Ocorreu erro ao gerar assinatura: " + erro.ToString());
             }
 
             return retorno;
@@ -206,18 +205,18 @@ namespace MXM.Assinatura.Infraestrutura
                 settings.Encoding = Encoding.UTF8;
                 settings.Indent = false;
                 settings.OmitXmlDeclaration = false;
-                
+
                 using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, settings))
                 {
                     xmlSerializer.Serialize(xmlWriter, aDataBind);
                 }
-                
+
                 retorno = stringWriter.ToString();
                 retorno = XElement.Parse(retorno).ToString(SaveOptions.DisableFormatting);
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu um erro ao converter databind em xml: " + erro.Message);
+                AddMensagem("Ocorreu um erro ao converter databind em xml: " + erro.ToString());
             }
             finally
             {
@@ -244,14 +243,13 @@ namespace MXM.Assinatura.Infraestrutura
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu um erro ao converter xml em databind: " + erro.Message);
+                AddMensagem("Ocorreu erro ao converter xml em databind: " + erro.ToString());
             }
             finally
             {
                 stream.Close();
                 writer.Close();
             }
-
             return retorno;
         }
     }

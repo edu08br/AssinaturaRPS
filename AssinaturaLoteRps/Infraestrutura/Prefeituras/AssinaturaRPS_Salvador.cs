@@ -14,6 +14,7 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
         public AssinaturaRPS_Salvador(String aXML)
         {
             this.XML = aXML;
+            enviarLoteRPSEnvio = null;
         }
 
         protected override string ExecutarProcessoEspecifico()
@@ -27,7 +28,7 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
                 {
                     SignatureType signatureTypeRps = null;
 
-                    xmlAssinado = ConverterDataBindEmStringXml<EnviarLoteRpsEnvio>(enviarLoteRPSEnvio);
+                    xmlAssinado = ConverterDataBindEmStringXml<tcRps>(rps);
                     if (!String.IsNullOrEmpty(xmlAssinado))
                     {
                         signatureTypeRps = ObterTagSignatureAssinada<SignatureType>(xmlAssinado, rps.InfRps.id, true);
@@ -56,7 +57,7 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu um erro ao assinar o XML: " + erro.Message);
+                AddMensagem("Ocorreu um erro ao assinar o XML: " + erro.ToString());
             }
             return retorno;
         }
@@ -66,18 +67,13 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
             if (!String.IsNullOrEmpty(XML))
             {
                 enviarLoteRPSEnvio = ConverterStringXmlEmDataBind<EnviarLoteRpsEnvio>(XML);
-
-                if (enviarLoteRPSEnvio == null)
-                {
-                    AddMensagem("Ocorreu erro ao converter XML em Classe");
-                }
             }
             else
             {
-                AddMensagem("XML vazio");
+                AddMensagem("Ocorreu erro - XML vazio");
             }
 
-            return Mensagens.Count == 0;
+            return (enviarLoteRPSEnvio != null);
         }
 
         private String AssinarXml(string arquivo, string tagAssinatura, string tagAtributoId)
