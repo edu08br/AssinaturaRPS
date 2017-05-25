@@ -1,0 +1,116 @@
+<EnviarLoteRpsSincronoEnvio xmlns="http://www.abrasf.org.br/nfse.xsd">
+	<LoteRps Id="12450" versao="2.02">
+		<NumeroLote>12450</NumeroLote>
+		<CpfCnpj>
+			<Cnpj>59106955001142</Cnpj>
+		</CpfCnpj>
+		<InscricaoMunicipal>1537893</InscricaoMunicipal>
+		<QuantidadeRps>1</QuantidadeRps>
+		<ListaRps>
+			<Rps>
+				<InfDeclaracaoPrestacaoServico>
+					<Rps Id="46641">
+						<IdentificacaoRps>
+							<Numero>4664</Numero>
+							<Serie>1</Serie>
+							<Tipo>1</Tipo>
+						</IdentificacaoRps>
+						<DataEmissao>2017-04-19</DataEmissao>
+						<Status>1</Status>
+					</Rps>
+					<Competencia>2017-04-19</Competencia>
+					<Servico>
+						<Valores>
+							<ValorServicos>11693.44</ValorServicos>
+							<ValorPis>76.00</ValorPis>
+							<ValorCofins>350.80</ValorCofins>
+							<ValorCsll>116.93</ValorCsll>
+							<ValorIss>233.87</ValorIss>
+							<Aliquota>2.00</Aliquota>
+						</Valores>
+						<IssRetido>2</IssRetido>
+						<ItemListaServico>1401</ItemListaServico>
+						<CodigoCnae>3317101</CodigoCnae>
+						<CodigoTributacaoMunicipio>1401</CodigoTributacaoMunicipio>
+						<Discriminacao>Trib. aproxim: Federal - R$ 1.572.77 (13.45%) - Municipal - R$ 492.29 (4.21%) - Fonte: IBPT
+ SERVICO EXECUTADO A BORDO DA INSTALACAO SANTOS SUPPLIER
+POR EMERSON PEIXOTO / ROGEIRO PINTO
+R17/01440
+P.O. 106412** VENCIMENTO =&gt; 19/05/17</Discriminacao>
+						<CodigoMunicipio>3305000</CodigoMunicipio>
+						<ExigibilidadeISS>1</ExigibilidadeISS>
+						<MunicipioIncidencia>3303302</MunicipioIncidencia>
+					</Servico>
+					<Prestador>
+						<CpfCnpj>
+							<Cnpj>59106955001142</Cnpj>
+						</CpfCnpj>
+						<InscricaoMunicipal>1537893</InscricaoMunicipal>
+					</Prestador>
+					<Tomador>
+						<IdentificacaoTomador>
+							<CpfCnpj>
+								<Cnpj>07864634000484</Cnpj>
+							</CpfCnpj>
+							<InscricaoMunicipal>1504497</InscricaoMunicipal>
+						</IdentificacaoTomador>
+						<RazaoSocial>BRAM OFFSHORE TRANSPORTES MARITIMOS LTDA</RazaoSocial>
+						<Endereco>
+							<Endereco>AVENIDA WASHIGTON LUIS</Endereco>
+							<Numero>79</Numero>
+							<Bairro>CENTRO</Bairro>
+							<CodigoMunicipio>3303302</CodigoMunicipio>
+							<Uf>RJ</Uf>
+							<Cep>24030250</Cep>
+						</Endereco>
+						<Contato>
+							<Email>eduardo.silva@chouest.com</Email>
+						</Contato>
+					</Tomador>
+					<OptanteSimplesNacional>2</OptanteSimplesNacional>
+					<IncentivoFiscal>2</IncentivoFiscal>
+				</InfDeclaracaoPrestacaoServico>
+				<Signature xmlns="http://www.w3.org/2000/09/xmldsig#" Id="Ass_46641">
+					<SignedInfo>
+						<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+						<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+						<Reference URI="#46641">
+							<Transforms>
+								<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+								<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+							</Transforms>
+							<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+							<DigestValue>Voi74RbpTdalkrsHKg8oVopMM3I=</DigestValue>
+						</Reference>
+					</SignedInfo>
+					<SignatureValue>qnpHHIAVjIDGjBF/AYmHCCEzm/zlxOoaRbPOcXwvqc8ID/Cgq4nkDDJlyPaBnSWdmh8UAHz+/mnTROpQ88EDk6zXXRAS6hHEHDRfM6xfM3knLyScAQTZf6Wel+1j2QyOJW+lrtoo94Ea/GKsUCu+O+MQP5AA2vK+ggeyoNy3mQ86p+fjUyXhmKcN8OsCC6RCzmbon2rS2LXyqvnl1KwldDdbzfmSTl2iGh4qWkY/YU+CN7NUZv7/FRVKuRbXmYwbePFlL8RU47ysSSZUrXHEorZHsjzZ1FLVl/YahCIJ+v7qvNsZkKQvzIplUfVfubjx+g9DQgw6PFDYhCuCRYifKg==</SignatureValue>
+					<KeyInfo>
+						<X509Data>
+							<X509Certificate>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</X509Certificate>
+						</X509Data>
+					</KeyInfo>
+				</Signature>
+			</Rps>
+		</ListaRps>
+	</LoteRps>
+	<Signature xmlns="http://www.w3.org/2000/09/xmldsig#" Id="Ass_12450">
+		<SignedInfo>
+			<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+			<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+			<Reference URI="#12450">
+				<Transforms>
+					<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+					<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+				</Transforms>
+				<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+				<DigestValue>tumXZl1S0/dDCFEX/iRSEa4JWvU=</DigestValue>
+			</Reference>
+		</SignedInfo>
+		<SignatureValue>IGQOmJUj5wqPwzNrRa6ux53UaJxqVjplgTKNBVcWycYrHJ4fKyKIUC5R9DS05dJLlzf01jIo4rViEkM8c7LVBxptA+tI/pOyanZ0RaqR5Yw1h5WI/dI39tMqNF9vxSUGehLKT1cDSwDAGnTHU1gP9ondZU45tidDcAQKmSb/2pYIyEoYnz1bw6vKJFFjsWPgj5XMOtH0hRrf0Q7OryDUpJlzlGkhH4gelqVliO9JOgidLKBSRGIz0y2q86gnShaBwLRupI/6cC4UlnTu3P/jeUAFCp10BuRa6qwUAq7LYCJJA5s9WozHDxkGXcu7TUpO+qKvTQUG+V6S4+C7sZOHUQ==</SignatureValue>
+		<KeyInfo>
+			<X509Data>
+				<X509Certificate>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</X509Certificate>
+			</X509Data>
+		</KeyInfo>
+	</Signature>
+</EnviarLoteRpsSincronoEnvio>
