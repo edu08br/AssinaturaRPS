@@ -4,7 +4,6 @@ using System.Security.Cryptography;
 
 namespace MXM.Assinatura.Infraestrutura.Prefeituras
 {
-    [Guid("97ED8500-9188-458B-8E01-91D5B5E96F03")]
     public class AssinaturaRPS_SP : AssinaRPS_TemplateMethod
     {
         private string sAssinatura;
@@ -52,7 +51,6 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
                 sAssinaturaByte = rsaf.CreateSignature(hash);
 
                 //por fim fazemos a conversao do array de bytes para string
-
                 retorno = Convert.ToBase64String(sAssinaturaByte);
             }
             catch (Exception ex)
