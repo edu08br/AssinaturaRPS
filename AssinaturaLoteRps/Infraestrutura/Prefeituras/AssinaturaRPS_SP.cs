@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MXM.Assinatura.Infraestrutura.Prefeituras
+namespace MXM.Assinaturas.Infraestrutura.Prefeituras
 {
     public class AssinaturaRPS_SP : AssinaRPS_TemplateMethod
     {

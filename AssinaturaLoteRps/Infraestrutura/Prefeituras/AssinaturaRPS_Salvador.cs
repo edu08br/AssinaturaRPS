@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MXM.Assinatura.Infraestrutura.Prefeituras
+namespace MXM.Assinaturas.Infraestrutura.Prefeituras
 {
     public class AssinaturaRPS_Salvador : AssinaRPS_TemplateMethod
     {

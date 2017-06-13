@@ -1,8 +1,8 @@
-﻿using MXM.Assinatura.Infraestrutura.Prefeituras;
+﻿using MXM.Assinaturas.Infraestrutura.Prefeituras;
 using RGiesecke.DllExport;
 using System.Runtime.InteropServices;
 
-namespace MXM.Assinatura.Processos
+namespace MXM.Assinaturas.Processos
 {
     public class AssinaturaRPS
     {

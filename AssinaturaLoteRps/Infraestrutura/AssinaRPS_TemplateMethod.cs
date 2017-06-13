@@ -5,7 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 
-namespace MXM.Assinatura.Infraestrutura
+namespace MXM.Assinaturas.Infraestrutura
 {
     public abstract class AssinaRPS_TemplateMethod
     {
