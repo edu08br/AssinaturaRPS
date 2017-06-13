@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace MXM.Assinatura.Infraestrutura.Prefeituras
 {
-    [Guid("5F8FDE21-D0A3-46BD-8D6A-5F234572A53A")]
     public class AssinaturaRPS_Salvador : AssinaRPS_TemplateMethod
     {
         private string XML;
@@ -16,6 +14,7 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
         protected override string ExecutarProcessoEspecifico()
         {
             String retorno = String.Empty;
+
             try
             {
                 retorno = AssinarXml(XML, "Rps", "InfRps", true);
@@ -23,7 +22,7 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu erro - ao assinar o XML: " + erro.Message);
+                AddMensagem("Ocorreu erro na assinatura do XML: " + erro.ToString());
             }
 
             return retorno;
@@ -34,7 +33,7 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
             Boolean retorno = true;
             if (String.IsNullOrEmpty(XML))
             {
-                AddMensagem("Ocorreu erro - XML Vazio");
+                AddMensagem("Ocorreu erro com XML Vazio");
                 retorno = false;
             }
 

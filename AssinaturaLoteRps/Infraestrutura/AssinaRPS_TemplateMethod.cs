@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 
 namespace MXM.Assinatura.Infraestrutura
 {
-    [Guid("B94BE863-F063-4BE6-B019-0F901A9671CB")]
     public abstract class AssinaRPS_TemplateMethod
     {
         private string numeroSerieCertificado;
+
         protected abstract Boolean IsDadosValidos();
+
         protected abstract String ExecutarProcessoEspecifico();
 
         protected List<String> Mensagens;
@@ -25,28 +26,34 @@ namespace MXM.Assinatura.Infraestrutura
 
         public String Assinar(string sNumeroSerieCert)
         {
-            this.numeroSerieCertificado = sNumeroSerieCert;
+            this.numeroSerieCertificado = sNumeroSerieCert.ToUpper();
 
             String retorno = String.Empty;
+
             try
             {
-                if (IsCertificadoExistente() && IsDadosValidos())
+                if (IsCertificadoExistente())
                 {
-                    retorno = ExecutarProcessoEspecifico();
+                    if (IsDadosValidos())
+                    {
+                        retorno = ExecutarProcessoEspecifico();
+                    }
                 }
-
-                retorno += String.Concat(Mensagens.ToArray());
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu erro - ao executar o processo: " + erro.ToString());
+                AddMensagem("Ocorreu erro ao executar o processo: " + erro.ToString());
+            }
+            finally
+            {
+                retorno += String.Concat(Mensagens.ToArray());
             }
             return retorno;
         }
 
         private bool IsCertificadoExistente()
         {
-            if (string.IsNullOrWhiteSpace(numeroSerieCertificado))
+            if (String.IsNullOrEmpty(numeroSerieCertificado))
             {
                 AddMensagem("Ocorreu erro - Certificado digital não parametrizado.");
             }
@@ -69,17 +76,20 @@ namespace MXM.Assinatura.Infraestrutura
             X509Store store = new X509Store(name, location);
             try
             {
-                store.Open(OpenFlags.ReadOnly);
-                X509Certificate2Collection col = store.Certificates.Find(findType, findValue, false);
+                store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
 
-                if ((col != null) && (col.Count > 0))
+                foreach (X509Certificate2 col in store.Certificates)
                 {
-                    retorno = col[0];
+                    if (string.Compare(col.SerialNumber, findValue) == 0)
+                    {
+                        retorno = col;
+                        break;
+                    }
                 }
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu erro - ao localizar o certificado: " + erro.ToString());
+                AddMensagem("Ocorreu erro ao localizar o certificado: " + erro.ToString());
             }
             finally
             {
@@ -94,7 +104,7 @@ namespace MXM.Assinatura.Infraestrutura
             this.Mensagens.Add(descricao);
         }
 
-        protected String AssinarXml(string xml, string tagAssinatura, string tagAtributoId, Boolean IsSalvador = false)
+        protected String AssinarXml(string aXML, string tagAssinatura, string tagAtributoId, Boolean IsSalvador = false)
         {
             string XMLAssinado = String.Empty;
 
@@ -102,7 +112,7 @@ namespace MXM.Assinatura.Infraestrutura
             {
                 XmlDocument doc = new XmlDocument();
                 doc.PreserveWhitespace = false;
-                doc.LoadXml(xml);
+                doc.LoadXml(aXML);
 
                 if (isDocumentoXmlValidoParaAssinar(doc, tagAssinatura, tagAtributoId))
                 {
@@ -117,9 +127,12 @@ namespace MXM.Assinatura.Infraestrutura
                             if (childNodes.NextSibling != null && childNodes.NextSibling.Name.Equals("Signature"))
                                 continue;
 
-                            XmlElement xmlDigitalSignature = GerarAssinatura(IsSalvador, doc, childNodes);
+                            XmlElement xmlNodeSignature = GerarAssinatura(IsSalvador, doc, childNodes);
 
-                            nodes.AppendChild(doc.ImportNode(xmlDigitalSignature, true));
+                            if (xmlNodeSignature != null)
+                            {
+                                nodes.AppendChild(doc.ImportNode(xmlNodeSignature, true));
+                            }
                         }
                     }
 
@@ -128,7 +141,7 @@ namespace MXM.Assinatura.Infraestrutura
             }
             catch (Exception erro)
             {
-                AddMensagem("Ocorreu erro - ao assinar. " + erro.ToString());
+                AddMensagem("Ocorreu erro ao assinar. " + erro.ToString());
             }
 
             return XMLAssinado;
@@ -139,12 +152,12 @@ namespace MXM.Assinatura.Infraestrutura
             Boolean retorno = true;
             if (doc.GetElementsByTagName(tagAssinatura).Count == 0)
             {
-                AddMensagem("Ocorreu erro - A tag de assinatura " + tagAssinatura.Trim() + " não existe no XML. (Código do Erro: 5)");
+                AddMensagem("Ocorreu erro na tag de assinatura " + tagAssinatura.Trim() + " não existe no XML.");
                 retorno = false;
             }
             else if (doc.GetElementsByTagName(tagAtributoId).Count == 0)
             {
-                AddMensagem("Ocorreu erro - A tag de assinatura " + tagAtributoId.Trim() + " não existe no XML. (Código do Erro: 4)");
+                AddMensagem("Ocorreu erro na tag de assinatura " + tagAtributoId.Trim() + " não existe no XML.");
                 retorno = false;
             }
 
@@ -162,15 +175,17 @@ namespace MXM.Assinatura.Infraestrutura
                 XmlElement childElemen = (XmlElement)childNodes;
                 if (childElemen.GetAttributeNode("Id") != null)
                 {
-                    reference.Uri = ""; // "#" + childElemen.GetAttributeNode("Id").Value;
+                    reference.Uri = "#" + childElemen.GetAttributeNode("Id").Value;
                 }
                 else if (childElemen.GetAttributeNode("id") != null)
                 {
                     reference.Uri = "#" + childElemen.GetAttributeNode("id").Value;
                 }
 
+                RSACryptoServiceProvider privateKeyProvider = (RSACryptoServiceProvider)certificado.PrivateKey;
+
                 SignedXml signedXml = new SignedXml(doc);
-                signedXml.SigningKey = certificado.PrivateKey;
+                signedXml.SigningKey = privateKeyProvider;
 
                 XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
                 reference.AddTransform(env);
@@ -187,7 +202,7 @@ namespace MXM.Assinatura.Infraestrutura
                 KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
                 if (IsSalvador)
                 {
-                    KeyInfoClause rsaKeyVal = new RSAKeyValue((System.Security.Cryptography.RSA)certificado.PrivateKey);
+                    KeyInfoClause rsaKeyVal = new RSAKeyValue((RSA)privateKeyProvider);
                     keyInfo.AddClause(rsaKeyVal);
 
                     x509Data.AddSubjectName(certificado.SubjectName.Name.ToString());
@@ -196,15 +211,15 @@ namespace MXM.Assinatura.Infraestrutura
                 keyInfo.AddClause(x509Data);
 
                 signedXml.KeyInfo = keyInfo;
+
                 signedXml.ComputeSignature();
 
                 retorno = signedXml.GetXml();
             }
             catch (Exception erro)
             {
-                throw erro;
+                AddMensagem("Ocorreu erro ao assinar. " + erro.InnerException.ToString());
             }
-
             return retorno;
         }
     }

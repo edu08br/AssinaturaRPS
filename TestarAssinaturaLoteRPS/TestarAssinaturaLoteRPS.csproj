@@ -80,7 +80,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AssinaturaAdicionalRPS_SP\MXM.Assinatura.csproj">
+    <ProjectReference Include="..\AssinaturaLoteRps\MXM.Assinatura.csproj">
       <Project>{6e407c5b-0ecb-4523-82f6-b07d7c37f926}</Project>
       <Name>MXM.Assinatura</Name>
     </ProjectReference>
