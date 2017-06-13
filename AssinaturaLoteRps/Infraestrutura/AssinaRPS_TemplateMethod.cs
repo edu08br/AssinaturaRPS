@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
-using System.Security.Permissions;
-using System.ServiceModel;
 using System.Xml;
-using System.Reflection;
 
 namespace MXM.Assinatura.Infraestrutura
 {
@@ -28,8 +24,6 @@ namespace MXM.Assinatura.Infraestrutura
             certificado = null;
         }
 
-        //[PermissionSetAttribute(SecurityAction.PermitOnly, Name = "FullTrust")]
-        //[OperationBehavior(Impersonation = ImpersonationOption.Required)]
         public String Assinar(string sNumeroSerieCert)
         {
             this.numeroSerieCertificado = sNumeroSerieCert.ToUpper();
@@ -59,7 +53,7 @@ namespace MXM.Assinatura.Infraestrutura
 
         private bool IsCertificadoExistente()
         {
-            if (string.IsNullOrWhiteSpace(numeroSerieCertificado))
+            if (String.IsNullOrEmpty(numeroSerieCertificado))
             {
                 AddMensagem("Ocorreu erro - Certificado digital não parametrizado.");
             }
@@ -76,8 +70,6 @@ namespace MXM.Assinatura.Infraestrutura
             return (certificado != null);
         }
 
-        //[PermissionSetAttribute(SecurityAction.PermitOnly, Name = "FullTrust")]
-        //[OperationBehavior(Impersonation = ImpersonationOption.Required)]
         protected X509Certificate2 FindCertificate(StoreLocation location, StoreName name, X509FindType findType, string findValue)
         {
             X509Certificate2 retorno = null;
@@ -112,14 +104,16 @@ namespace MXM.Assinatura.Infraestrutura
             this.Mensagens.Add(descricao);
         }
 
-        //[PermissionSetAttribute(SecurityAction.PermitOnly, Name = "FullTrust")]
-        //[OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        protected String AssinarXml(XmlDocument doc, string tagAssinatura, string tagAtributoId, Boolean IsDsf = false)
+        protected String AssinarXml(string aXML, string tagAssinatura, string tagAtributoId, Boolean IsSalvador = false)
         {
             string XMLAssinado = String.Empty;
 
             try
             {
+                XmlDocument doc = new XmlDocument();
+                doc.PreserveWhitespace = false;
+                doc.LoadXml(aXML);
+
                 if (isDocumentoXmlValidoParaAssinar(doc, tagAssinatura, tagAtributoId))
                 {
                     XmlNodeList lists = doc.GetElementsByTagName(tagAssinatura);
@@ -127,25 +121,22 @@ namespace MXM.Assinatura.Infraestrutura
                     {
                         foreach (XmlNode childNodes in nodes.ChildNodes)
                         {
-                            AddMensagem("..." + childNodes.Name + "=" + doc.OuterXml);
-
                             if (!childNodes.Name.Equals(tagAtributoId))
                                 continue;
 
                             if (childNodes.NextSibling != null && childNodes.NextSibling.Name.Equals("Signature"))
                                 continue;
 
-                            XmlElement xmlNodeSignature = GerarAssinatura(IsDsf, doc, nodes, childNodes);
+                            XmlElement xmlNodeSignature = GerarAssinatura(IsSalvador, doc, childNodes);
 
                             if (xmlNodeSignature != null)
                             {
-                                // AddMensagem("INSTANCIADO" + childNodes.Name);
-                                //nodes.AppendChild(doc.ImportNode(xmlNodeSignature, true));
+                                nodes.AppendChild(doc.ImportNode(xmlNodeSignature, true));
                             }
                         }
                     }
 
-                    //XMLAssinado = doc.OuterXml;
+                    XMLAssinado = doc.OuterXml;
                 }
             }
             catch (Exception erro)
@@ -156,8 +147,6 @@ namespace MXM.Assinatura.Infraestrutura
             return XMLAssinado;
         }
 
-        //[PermissionSetAttribute(SecurityAction.PermitOnly, Name = "FullTrust")]
-        //[OperationBehavior(Impersonation = ImpersonationOption.Required)]
         private bool isDocumentoXmlValidoParaAssinar(XmlDocument doc, string tagAssinatura, string tagAtributoId)
         {
             Boolean retorno = true;
@@ -175,9 +164,7 @@ namespace MXM.Assinatura.Infraestrutura
             return retorno;
         }
 
-        //[PermissionSetAttribute(SecurityAction.Demand, Name = "FullTrust")]
-        //[OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        private XmlElement GerarAssinatura(bool IsDsf, XmlDocument doc, XmlNode nodes, XmlNode childNodes)
+        private XmlElement GerarAssinatura(bool IsSalvador, XmlDocument doc, XmlNode childNodes)
         {
             XmlElement retorno = null;
             try
@@ -203,7 +190,7 @@ namespace MXM.Assinatura.Infraestrutura
                 XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
                 reference.AddTransform(env);
 
-                if (!IsDsf)
+                if (!IsSalvador)
                 {
                     XmlDsigC14NTransform c14 = new XmlDsigC14NTransform();
                     reference.AddTransform(c14);
@@ -213,7 +200,7 @@ namespace MXM.Assinatura.Infraestrutura
 
                 KeyInfo keyInfo = new KeyInfo();
                 KeyInfoX509Data x509Data = new KeyInfoX509Data(certificado);
-                if (IsDsf)
+                if (IsSalvador)
                 {
                     KeyInfoClause rsaKeyVal = new RSAKeyValue((RSA)privateKeyProvider);
                     keyInfo.AddClause(rsaKeyVal);
@@ -225,17 +212,12 @@ namespace MXM.Assinatura.Infraestrutura
 
                 signedXml.KeyInfo = keyInfo;
 
-                
-
                 signedXml.ComputeSignature();
 
                 retorno = signedXml.GetXml();
-
-                nodes.AppendChild(retorno);
             }
             catch (Exception erro)
             {
-                //AddMensagem("Ocorreu erro ao assinar. " + erro.ToString());
                 AddMensagem("Ocorreu erro ao assinar. " + erro.InnerException.ToString());
             }
             return retorno;

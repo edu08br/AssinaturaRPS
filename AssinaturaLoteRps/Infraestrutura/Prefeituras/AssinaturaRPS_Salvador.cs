@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using System.Security.Permissions;
-using System.ServiceModel;
-using System.Xml;
 
 namespace MXM.Assinatura.Infraestrutura.Prefeituras
 {
@@ -15,40 +11,20 @@ namespace MXM.Assinatura.Infraestrutura.Prefeituras
             this.XML = aXML;
         }
 
-        //[PermissionSetAttribute(SecurityAction.PermitOnly, Name = "FullTrust")]
-        //[OperationBehavior(Impersonation = ImpersonationOption.Required)]
         protected override string ExecutarProcessoEspecifico()
         {
             String retorno = String.Empty;
 
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.PreserveWhitespace = false;
-                doc.LoadXml(XML);
-
-                //try
-                //{
-                //    retorno = AssinarXml(doc, "Rps", "InfRps", true);
-                //}
-                //catch
-                //{
-                //    Mensagens.Clear();
-                //    throw;
-                //}
-
-                retorno = AssinarXml(doc, "Rps", "InfRps", true);
-                retorno = AssinarXml(doc, "Rps", "InfRps", true);
-                retorno = AssinarXml(doc, "EnviarLoteRpsEnvio", "LoteRps", true);
-
-                retorno = retorno.Replace("<", "&lt;");
-                retorno = retorno.Replace(">", "&gt;");
+                retorno = AssinarXml(XML, "Rps", "InfRps", true);
+                retorno = AssinarXml(retorno, "EnviarLoteRpsEnvio", "LoteRps", true);
             }
             catch (Exception erro)
             {
                 AddMensagem("Ocorreu erro na assinatura do XML: " + erro.ToString());
             }
-            
+
             return retorno;
         }
 
